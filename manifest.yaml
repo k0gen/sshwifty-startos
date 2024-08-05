@@ -1,0 +1,94 @@
+id: sshwifty 
+title: "Sshwifty"
+version: 0.3.12
+release-notes: "Sshwifty for StartOS"
+license: AGPL-3.0
+wrapper-repo: "https://github.com/k0gen/sshwifty-startos"
+upstream-repo: "https://github.com/nirui/sshwifty"
+support-site: "https://github.com/nirui/sshwifty/issues"
+marketing-site: "https://github.com/nirui/sshwifty"
+build: ["make"]
+description:
+  short: Sshwifty Web SSH & Telnet Client
+  long: |
+     Sshwifty is a SSH and Telnet client made for the Web, allow you to access SSH and Telnet services right from your web browser.
+assets:
+  license: LICENSE
+  icon: icon.png
+  instructions: instructions.md
+main:
+  type: docker
+  image: main
+  entrypoint: "docker_entrypoint.sh"
+  args: []
+  mounts:
+    main: /root
+health-checks:
+  web-ui:
+    name: Sshwifty Web Interface
+    success-message: Service is online and ready to use
+    type: script
+config:
+  get:
+    type: script
+  set:
+    type: script
+properties:
+  type: script
+dependencies: {}
+volumes:
+  main:
+    type: data
+interfaces:
+  main:
+    name: User Interface
+    description: A simple user interface that is expected to display the Sshwifty Web Terminal Interface.
+    tor-config:
+      port-mapping:
+        80: "8182"
+    lan-config:
+      443:
+        ssl: true
+        internal: 8182
+    ui: true
+    protocols:
+      - http
+      - tcp
+backup:
+  create:
+    type: docker
+    image: compat
+    system: true 
+    entrypoint: compat 
+    args:
+      - duplicity
+      - create
+      - /mnt/backup
+      - /root/.config
+    mounts:
+      BACKUP: "/mnt/backup" 
+      main: "/root/.config"
+    io-format: yaml
+  restore:
+    type: docker
+    image: compat
+    system: true
+    entrypoint: compat
+    args:
+      - duplicity
+      - restore
+      - /mnt/backup
+      - /root/.config
+    mounts:
+      BACKUP: "/mnt/backup"
+      main: "/root/.config"
+    io-format: yaml
+migrations:
+  from:
+    "*":
+      type: script
+      args: ["from"]
+  to:
+    "*":
+      type: script
+      args: ["to"]
